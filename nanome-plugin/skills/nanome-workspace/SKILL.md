@@ -27,13 +27,14 @@ Parse what the user wants to visualize and why. Infer aggressively:
 
 Immediately resolve identifiers to concrete database sources and fetch metadata (chain count, ligands, resolution) to inform scene design.
 
-### Step 2: Design Scenes
+### Step 2: Design Scene
 
-Design 2-4 scenes with appropriate visualization components using the heuristics below. Do not present for approval — proceed directly to script generation.
+Create **1 scene** with appropriate visualization components. Only create multiple scenes if the user explicitly asks for them (e.g., "create separate scenes for binding site and surface view"). Do not present for approval — proceed directly to script generation.
 
-- **Structure type:** Proteins get ribbon + surface; small molecules get ball-and-stick; complexes get ribbon for protein + ball-and-stick for ligand.
-- **User purpose:** Drug discovery emphasizes binding sites and ligand interactions; teaching emphasizes full structure overviews; comparison emphasizes aligned views.
-- **Structure count:** Single structure gets more detailed per-scene breakdown; many structures get overview scenes with grouped entries.
+Choose components based on structure type:
+- **Proteins** → Ribbon (Cartoon) with ChainInstance coloring + Ball-and-stick for ligands
+- **Small molecules** → Ball-and-stick with ElementType coloring
+- **Complexes (protein + ligand)** → Ribbon for protein + Ball-and-stick for ligand
 
 **Decision point — `add-default` vs custom components:**
 - Use `add-default` when the user has no specific visualization preferences and the structure type has clear defaults.
@@ -79,7 +80,7 @@ Authentication credentials are stored in `~/.nanome/config.json`:
 
 1. **Read config** — check `~/.nanome/config.json` for `api_base` and `token`.
 2. **If config exists** — use the key. Proceed with workspace creation.
-3. **If config is missing** — invoke the `nanome-auth` skill to authenticate the user via the browser-based device code flow. This opens their browser, displays a 4-character code, and saves the token automatically. After auth completes, proceed with workspace creation.
+3. **If config is missing** — invoke the `nanome-auth` skill to authenticate the user. This opens their browser to mara.nanome.ai/settings where they create an API key and paste it back. After auth completes, proceed with workspace creation.
 4. **If an API call fails with 401/403** — the token may have expired. Invoke the `nanome-auth` skill to re-authenticate, then retry the failed operation.
 5. **Never interrupt the build process to ask about auth** — the auth skill handles everything automatically.
 
@@ -511,25 +512,26 @@ Use the `uniformColor`, `size scale`, `bondScale`, and `gapScale` values from th
 
 ## Scene Design Heuristics
 
-Use this table to map from user goals to scene/component strategies:
+**Default: 1 scene.** Only create multiple scenes when the user explicitly requests them.
 
-| User Goal | Scenes | Component Strategy |
-|-----------|--------|-------------------|
-| General protein visualization | Overview | Protein: Cartoon/ChainInstance coloring. Ligands: Ball-and-stick/ElementType |
-| Drug binding analysis | Overview, Binding Site, Surface | + Distance filter 5A around ligand, stick for nearby residues, HydrogenBonds + Hydrophobic interactions, transparent surface |
-| Structure comparison | Per-structure overview | Each entry: Cartoon with distinct Uniform color |
-| DNA/RNA-protein complex | Overview, Interface | Protein + nucleic acid as Cartoon with different colors, interface residues within 4A |
-| Small molecule library | Ligand gallery | Each ligand: Ball-and-stick, ElementType coloring |
-| AlphaFold prediction | Confidence view | Cartoon colored by BFactor (pLDDT), Cold-to-Warm palette |
-| Teaching/presentation | Progressive scenes | Scene 1: full protein. Scene 2: zoom to region. Scene 3: details |
-| Unrecognized / other | Overview only | Fallback: use `add-default` per entry |
+Use this table to choose components for the single scene:
+
+| User Goal | Components |
+|-----------|-----------|
+| General protein visualization | Protein: Cartoon/ChainInstance coloring. Ligands: Ball-and-stick/ElementType |
+| Drug binding analysis | Protein: Cartoon. Ligand: Ball-and-stick. Binding residues: Stick (5A distance filter). Interactions: HydrogenBonds + Hydrophobic |
+| Structure comparison | Each entry: Cartoon with distinct Uniform color |
+| DNA/RNA-protein complex | Protein + nucleic acid: Cartoon with different colors |
+| Small molecule library | Each ligand: Ball-and-stick, ElementType coloring |
+| AlphaFold prediction | Cartoon colored by BFactor (pLDDT), Cold-to-Warm palette |
+| Unrecognized / other | Fallback: use `add-default` per entry |
 
 ### General Rules
 
-- Always create an Overview scene as scene 1
+- **Create 1 scene** unless the user explicitly asks for multiple scenes
+- Rename scene 1 (auto-created with workspace) to describe the content
 - Prefer one component per logical selection (per entry + substructure type)
 - Use per-entry `add-default` as fallback when user's goal doesn't match any heuristic
-- Max 20 scenes per workspace — keep it under 10 for usability
 - Solvent and ions hidden by default unless explicitly requested
 - When using `add-default` with multiple entries, call the per-entry route: `POST /workspaces/{id}/scenes/{serial}/entries/{entrySerial}/components/add-default`
 

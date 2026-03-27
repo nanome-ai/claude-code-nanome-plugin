@@ -4,8 +4,8 @@ A Claude Code plugin for creating [Nanome](https://nanome.ai) molecular visualiz
 
 ## What You Get
 
-- **`nanome:nanome-auth`** -- Browser-based login using Nanome's device code flow. Opens your browser, displays a 4-character code, and saves your token automatically. No manual config needed.
-- **`nanome:nanome-workspace`** -- High-level workspace builder. Describe what you want to visualize and it resolves structures, designs scenes, and builds the workspace end-to-end.
+- **`nanome:nanome-auth`** -- Opens your browser to create an API key at mara.nanome.ai/settings and saves it automatically. No manual config needed.
+- **`nanome:nanome-workspace`** -- High-level workspace builder. Describe what you want to visualize and it resolves structures, builds a scene with sensible defaults, and delivers a shareable workspace URL. Creates one focused scene by default; ask for multiple if needed.
 
 ## Installation
 
@@ -17,8 +17,7 @@ Use `/reload-plugins` inside a session to pick up changes without restarting.
 
 ### Requirements
 
-- **Python 3** (for the auth skill's WebSocket flow)
-- The `websockets` Python package (auto-installed if missing)
+- **Python 3** and **curl** (for API calls and config management)
 - A [Nanome](https://mara.nanome.ai) account (free to create)
 
 ## Quick Start
@@ -38,14 +37,14 @@ https://mara.nanome.ai/workspaces/abc123-...
 
 ## Authentication
 
-The plugin handles auth automatically. When no valid token is found, the `nanome-auth` skill:
+The plugin handles auth automatically. When no valid API key is found, the `nanome-auth` skill:
 
-1. Opens your browser to `mara.nanome.ai`
-2. Displays a 4-character login code in your terminal
-3. You log in and click **"Login via Device Code"** in the left sidebar (headset icon)
-4. Enter the code -- your token is saved to `~/.nanome/config.json`
+1. Opens your browser to `mara.nanome.ai/settings`
+2. You log in, go to the **System** tab, and click **Create** under API Keys
+3. The key is auto-copied to your clipboard
+4. Paste it back in Claude -- it's saved to `~/.nanome/config.json`
 
-To re-authenticate, just tell Claude:
+API keys are long-lived, so you rarely need to re-authenticate. To set up auth manually or re-authenticate, tell Claude:
 
 > set up nanome auth
 
@@ -56,7 +55,7 @@ If you prefer to set up auth manually, create `~/.nanome/config.json`:
 ```json
 {
   "api_base": "https://workspaces.nanome.ai",
-  "token": "your-token-here"
+  "token": "your-api-key-here"
 }
 ```
 
