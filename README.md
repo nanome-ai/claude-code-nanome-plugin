@@ -84,7 +84,6 @@ nanome-plugin/
 | PubChem | CID number | `2244` (aspirin) |
 | ChEMBL | ChEMBL ID | `CHEMBL25` |
 | SWISS-MODEL | UniProt accession | `P00533` |
-| COD | COD ID | `1000000` |
 
 ## Visualization Capabilities
 
